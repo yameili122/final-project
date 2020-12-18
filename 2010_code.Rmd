@@ -1,0 +1,210 @@
+---
+title: "Untitled"
+author: "Yamei Li"
+date: "12/14/2020"
+output: html_document
+---
+```{r}
+library(ipumsr)
+library(R.utils)
+library(tibble)
+library(data.table)
+library(dplyr)
+library(igraph)
+library(ggplot2)
+library(AER)
+library(jtools)
+library(naniar)
+setwd("/Users/yameili/Desktop/final")
+ddi<-read_ipums_ddi("usa_00010.xml")
+data<-read_ipums_micro(ddi)
+```
+```{r}
+attach(data)
+use_varb <- ((AGE >= 25) & (AGE <= 55))
+dat_use1 <- subset(data,use_varb)
+detach()
+attach(dat_use1)
+
+```
+```{r}
+EMPSTAT <- as.factor(as.numeric(EMPSTAT))
+levels(EMPSTAT) <- c("Employed","Unemployed","Not in the labor force","NA")
+LABFORCE <- as.factor(as.numeric(LABFORCE))
+levels(LABFORCE) <- c("In the labor force","Not in the labor force","NA")
+CLASSWKRD <- as.factor(as.numeric(CLASSWKRD))
+female <- as.numeric(SEX == 2)
+AGE <- as.numeric(AGE)
+
+```
+```{r}
+CLASSWKR <- as.factor(as.numeric(CLASSWKR))
+levels(CLASSWKR) <- c("Self-employed","Works for wage","NA")
+summary(CLASSWKR)
+```
+
+```{r}
+WKSWORK2<- as.factor(as.numeric(WKSWORK2))
+levels(WKSWORK2) <- c("1-13 weeks","14-26 weeks ","27-39 weeks","40-47 weeks","48-49 weeks","50-52 weeks","NA")
+summary(WKSWORK2)
+ggplot(dat_use1)+geom_histogram(aes(x=WKSWORK2,color=factor(MARST)))
+```
+
+
+```{r}
+educ_nohs <- as.factor(as.numeric(EDUC < 03))
+educ_hs <- as.factor(as.numeric((EDUC>=03) & (EDUC <= 06)))
+educ_smcoll <- as.factor(as.numeric((EDUC>=07) & (EDUC < 10)))
+educ_bach <- as.factor(as.numeric(EDUC == 10))
+educ_adv <- as.factor(as.numeric(EDUC >=11))
+summary(educ_nohs)
+summary(educ_hs)
+summary(educ_smcoll)
+summary(educ_bach)
+summary(educ_adv)
+counts<-table(EDUC)
+barplot(counts,main="educational  distribution-2010",xlab="educational level",ylab="counts")
+
+```
+```{r}
+ggplot(dat_use1)+geom_histogram(aes(x=EDUC,color=factor(SEX)))
+```
+
+
+```{r}
+CLASSWKR <- as.factor(as.numeric(CLASSWKR))
+levels(CLASSWKR) <- c("Self-employed","Works for wage","NA")
+summary(CLASSWKR)
+MARST<-as.factor(as.numeric(MARST))
+levels(MARST) <- c("Married,spouse present","Married,spouse abesent","Separated","Divorced","Windowed","Never married")
+summary(MARST)
+```
+
+```{r}
+is.na(INCWAGE) <- which((INCWAGE == 999999)|(INCWAGE == 999998))
+no_income<-as.factor(as.numeric(INCWAGE==0))
+poverty_income<-as.factor(as.numeric((INCWAGE>=01) & (INCWAGE <=19999)))
+low_income<-as.factor(as.numeric((INCWAGE>=20000) & (INCWAGE <=44999)))
+middle_income<-as.factor(as.numeric((INCWAGE>=45000) & (INCWAGE <=139999)))
+high_income<-as.factor(as.numeric((INCWAGE>=140000) & (INCWAGE <= 149999)))
+over_high_income<-as.factor(as.numeric((INCWAGE>=150000) & (INCWAGE <= 199999)))
+top_income<-as.factor(as.numeric(INCWAGE>200000))
+summary(poverty_income)
+summary(low_income)
+summary(middle_income)
+summary(high_income)
+summary(over_high_income)
+counts<-table(INCWAGE)
+barplot(counts,main="income distribution-2010",xlab="total income",ylab="counts",ylim=c(0,60000))
+```
+
+```{r}
+is.na(FTOTINC) <- which(FTOTINC == 9999999)
+Poverty_level <-as.factor(as.numeric((FTOTINC>0) & (FTOTINC <= 19999)))
+Low_income<-as.factor(as.numeric((FTOTINC>=20000) & (FTOTINC <=44999)))
+Middle_class<-as.factor(as.numeric((FTOTINC>=50000) & (FTOTINC <=139999)))
+Upper_middle_class<-as.factor(as.numeric((FTOTINC>=140000) & (FTOTINC <=149999)))
+High_income<-as.factor(as.numeric((FTOTINC>=150000) & (FTOTINC <= 199999)))
+Highest_tax_brackets<-as.factor(as.numeric(FTOTINC>200000))
+summary(Poverty_level)
+summary(Low_income)
+summary(Middle_class)
+summary(Upper_middle_class)
+summary(High_income)
+summary(Highest_tax_brackets)
+counts<-table(FTOTINC)
+barplot(counts,main="household income distribution-2010",xlab="total income",ylab="counts")
+```
+
+```{r}
+part_time<-as.factor(as.numeric(UHRSWORK<35))
+full_time <-as.factor(as.numeric((UHRSWORK>=35) & (UHRSWORK < 50)))
+extra_time<-as.factor(as.numeric(UHRSWORK>=50))
+summary(part_time)
+summary(full_time)
+summary(extra_time)
+counts<-table(UHRSWORK)
+barplot(counts,main="workhours of week bar-2010",xlab="hours",ylab="counts")
+```
+
+
+
+```{r}
+TRANWORK <- as.factor(TRANWORK)
+POVERTY <- as.factor(POVERTY)
+DEGFIELD<- as.factor(DEGFIELD)
+```
+
+```{r}
+HCOVANY <- as.factor(HCOVANY)
+levels(HCOVANY) <- c("No health insurance coverage","With health insurance coverage")
+is.na(CITIZEN) <- which(CITIZEN == 0)
+CITIZEN <- as.factor(CITIZEN)
+levels(CITIZEN) <- c("Born abroad of American parents","Naturalized citizen","Not a citizen","Not a citizen, but has received first papers","Foreign born, citizenship status not reported
+")
+summary(HCOVANY)
+summary(CITIZEN)
+```
+
+```{r}
+
+ggplot(dat_use1)+geom_density(aes(x=UHRSWORK,color=factor(SEX)))
+```
+```{r}
+ggplot(dat_use1)+geom_density(aes(x=UHRSWORK,color=factor(MARST)))
+```
+```{r}
+ggplot(dat_use1)+geom_density(aes(x=UHRSWORK,color=factor(EDUC)))
+```
+
+```{r}
+a<-ggplot(data=dat_use1,aes(x=UHRSWORK,y=INCWAGE,shape=factor(SEX),color=factor(SEX)))
+a+geom_point()
+```
+
+```{r}
+a<-ggplot(data=dat_use1,aes(x=UHRSWORK,y=EDUC,shape=factor(SEX),color=factor(SEX)))
+a+geom_point()
+```
+
+
+
+```{r}
+ggplot(dat_use1,aes(x=INCWAGE,y=UHRSWORK))+geom_point(aes(colour=factor(MARST)))+facet_wrap(~factor(MARST))+stat_smooth()
+```
+
+```{r}
+ggplot(dat_use1,aes(x=INCWAGE,y=UHRSWORK))+geom_point(aes(colour=factor(EDUC)))+facet_wrap(~factor(EDUC))+stat_smooth()
+```
+
+
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

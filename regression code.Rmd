@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "Yamei Li"
+date: "12/16/2020"
+output: html_document
+---
+```{r}
+library(ipumsr)
+library(R.utils)
+library(tibble)
+library(data.table)
+library(dplyr)
+library(igraph)
+library(ggplot2)
+library(AER)
+library(jtools)
+library(naniar)
+setwd("/Users/yameili/Desktop/final")
+ddi<-read_ipums_ddi("usa_00011.xml")
+data<-read_ipums_micro(ddi)
+attach(data)
+use_varb <- ((AGE >= 25) & (AGE <= 55))
+dat_use1 <- subset(data,use_varb)
+detach()
+attach(dat_use1)
+```
+```{r}
+educ_nohs <- as.factor(as.numeric(EDUC < 03))
+educ_hs <- as.factor(as.numeric((EDUC>=03) & (EDUC <= 06)))
+educ_smcoll <- as.factor(as.numeric((EDUC>=07) & (EDUC < 10)))
+educ_bach <- as.factor(as.numeric(EDUC == 10))
+educ_adv <- as.factor(as.numeric(EDUC >=11))
+```
+```{r}
+female <- as.numeric(SEX == 2)
+```
+```{r}
+model_temp0 <- lm(INCWAGE ~ AGE + female + UHRSWORK + WKSWORK2 + POVERTY + CLASSWKR + TRANWORK + MARST + educ_hs + educ_smcoll + educ_bach + educ_adv)
+summary(model_temp0)
+```
+
+
+
+
+```{r}
+model_temp1 <- lm(UHRSWORK ~ AGE + female +  WKSWORK2 + POVERTY + CLASSWKR + TRANWORK + MARST + educ_hs + educ_smcoll + educ_bach + educ_adv)
+summary(model_temp1)
+```
+```{r}
+model_temp3 <- lm(INCWAGE ~ AGE+ I(AGE^2)  + female + UHRSWORK + WKSWORK2 + POVERTY + CLASSWKR + TRANWORK + MARST + educ_hs + educ_smcoll + educ_bach + educ_adv)
+summary(model_temp3)
+```
+
+```{r}
+not_cover <- as.factor(as.numeric(HCOVANY == 1))
+model_logit0 <- glm(not_cover ~ AGE+ I(AGE^2)  + female + INCWAGE + UHRSWORK + WKSWORK2 + POVERTY + CLASSWKR + TRANWORK + MARST + educ_hs + educ_smcoll + educ_bach + educ_adv,family = binomial, data = dat_use1)
+summary(model_logit0)
+
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
